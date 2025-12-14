@@ -4,4 +4,4 @@ __pycache__/
 .env
 train_model.py
 smart-feeder/
-.git/
+model_pakan.pkl

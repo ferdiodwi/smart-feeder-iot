@@ -2,33 +2,19 @@ from flask import Flask, render_template, request, jsonify
 import firebase_admin
 from firebase_admin import credentials, db
 import datetime
-import pickle
-import numpy as np
 import os
 
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
 
 # --- FIREBASE INITIALIZATION ---
-# Get the directory where this file is located
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Check if Firebase is already initialized
 if not firebase_admin._apps:
     cred_path = os.path.join(BASE_DIR, 'serviceAccountKey.json')
     cred = credentials.Certificate(cred_path)
     firebase_admin.initialize_app(cred, {
         'databaseURL': 'https://iot-pakan-ayam-5ebc6-default-rtdb.asia-southeast1.firebasedatabase.app'
     })
-
-# --- LOAD ML MODEL ---
-model_path = os.path.join(BASE_DIR, 'model_pakan.pkl')
-try:
-    with open(model_path, 'rb') as f:
-        ml_model = pickle.load(f)
-    print("✅ ML Model loaded successfully")
-except Exception as e:
-    ml_model = None
-    print(f"⚠️ ML Model not found: {e}")
 
 # --- FIREBASE RTDB REFERENCES ---
 status_ref = db.reference('/feeder/status')
@@ -95,45 +81,12 @@ def manual_feed():
     except Exception as e:
         return jsonify({"message": f"Gagal! {str(e)}"})
 
-# --- ML PREDICTION ENDPOINT ---
+# --- ML PREDICTION (DISABLED) ---
 @app.route('/predict', methods=['POST'])
 def predict():
-    if ml_model is None:
-        return jsonify({
-            "status": "error",
-            "message": "Model ML tidak tersedia"
-        })
-    
-    try:
-        data = request.get_json()
-        
-        jumlah_ayam = int(data.get('jumlah_ayam', 0))
-        umur_minggu = int(data.get('umur_minggu', 0))
-        pakan_saat_ini = float(data.get('pakan_saat_ini', 0))
-        
-        if jumlah_ayam <= 0 or umur_minggu <= 0:
-            return jsonify({
-                "status": "error",
-                "message": "Input tidak valid"
-            })
-        
-        input_data = np.array([[jumlah_ayam, umur_minggu, pakan_saat_ini]])
-        prediction = ml_model.predict(input_data)[0]
-        
-        return jsonify({
-            "status": "ok",
-            "prediksi_kg": round(prediction, 2),
-            "input": {
-                "jumlah_ayam": jumlah_ayam,
-                "umur_minggu": umur_minggu,
-                "pakan_saat_ini_kg": pakan_saat_ini
-            }
-        })
-    except Exception as e:
-        return jsonify({
-            "status": "error",
-            "message": str(e)
-        })
+    return jsonify({
+        "status": "error",
+        "message": "Fitur ML tidak tersedia di versi cloud"
+    })
 
-# For Vercel
 app = app
