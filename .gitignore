@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+*.pyc
+.env
+train_model.py
+smart-feeder/
+.git/

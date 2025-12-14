@@ -1,2 +1,4 @@
-Flask>=2.0.0
-firebase-admin>=6.0.0
+flask
+firebase-admin
+numpy
+scikit-learn
