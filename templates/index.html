@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Feeder - Sistem Pakan Otomatis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Background Animation -->
+    <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <span class="logo-icon">🐔</span>
+                <h1>Smart Feeder</h1>
+            </div>
+            <p class="tagline">Sistem Pakan Ayam Otomatis</p>
+        </header>
+
+        <!-- Main Grid Layout -->
+        <div class="main-grid">
+            <!-- Left Column -->
+            <div class="left-column">
+                <!-- Status Card -->
+                <div class="card status-card">
+                    <div class="card-header">
+                        <h2>Status Sistem</h2>
+                        <div class="esp-status" id="esp-badge">
+                            <span class="status-dot"></span>
+                            <span id="esp-status-text">Menunggu ESP...</span>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <!-- Berat -->
+                        <div class="stat-item">
+                            <div class="stat-icon">⚖️</div>
+                            <div class="stat-info">
+                                <span class="stat-label">Berat Pakan</span>
+                                <span class="stat-value" id="berat">0 g</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progress-berat"></div>
+                            </div>
+                        </div>
+
+                        <!-- Mode -->
+                        <div class="stat-item">
+                            <div class="stat-icon">🎛️</div>
+                            <div class="stat-info">
+                                <span class="stat-label">Mode Aktif</span>
+                                <span class="stat-value" id="mode">MANUAL</span>
+                            </div>
+                        </div>
+
+                        <!-- Last Feed -->
+                        <div class="stat-item">
+                            <div class="stat-icon">🕐</div>
+                            <div class="stat-info">
+                                <span class="stat-label">Terakhir Makan</span>
+                                <span class="stat-value" id="last-feed">Belum pernah</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Control Card -->
+                <div class="card control-card">
+                    <div class="card-header">
+                        <h2>Kontrol</h2>
+                    </div>
+
+                    <div class="control-section">
+                        <h3>Pilih Mode</h3>
+                        <div class="mode-buttons">
+                            <button class="btn btn-mode" id="btn-manual" onclick="setManualMode()">
+                                <span class="btn-icon">✋</span>
+                                <span>Manual</span>
+                            </button>
+
+                            <!-- Auto mode as dropdown -->
+                            <select class="btn btn-mode-select" id="auto-select"
+                                onchange="handleAutoSelect(this.value)">
+                                <option value="" disabled selected>🤖 Auto</option>
+                                <option value="30">⏱️ 30 detik</option>
+                                <option value="60">⏱️ 1 menit</option>
+                                <option value="300">⏱️ 5 menit</option>
+                                <option value="600">⏱️ 10 menit</option>
+                                <option value="1800">⏱️ 30 menit</option>
+                                <option value="3600">⏱️ 1 jam</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Manual Feed Section -->
+                    <div class="control-section" id="manual-section">
+                        <h3>Aksi Manual</h3>
+                        <button class="btn btn-feed" onclick="manualFeed()">
+                            <span class="btn-icon">🍽️</span>
+                            <span>Beri Makan Sekarang</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="right-column">
+                <!-- ML Prediction Card -->
+                <div class="card prediction-card">
+                    <div class="card-header">
+                        <h2>🤖 Prediksi Kebutuhan Pakan</h2>
+                    </div>
+
+                    <div class="prediction-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="jumlah-ayam">Jumlah Ayam (ekor)</label>
+                                <input type="number" id="jumlah-ayam" min="1" max="1000" value="50" class="form-input">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="umur-minggu">Umur Ayam (minggu)</label>
+                                <input type="number" id="umur-minggu" min="1" max="52" value="4" class="form-input">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pakan-sekarang">Pakan Saat Ini (kg)</label>
+                            <input type="number" id="pakan-sekarang" min="0" step="0.1" value="10" class="form-input">
+                        </div>
+
+                        <button class="btn btn-predict" onclick="predictFeed()">
+                            <span class="btn-icon">📊</span>
+                            <span>Prediksi</span>
+                        </button>
+                    </div>
+
+                    <div class="prediction-result" id="prediction-result" style="display: none;">
+                        <div class="result-header">Kebutuhan Pakan Minggu Depan:</div>
+                        <div class="result-value" id="prediction-value">0 kg</div>
+                    </div>
+                </div>
+
+                <!-- Info Card -->
+                <div class="card info-card">
+                    <div class="info-item">
+                        <span class="info-icon">ℹ️</span>
+                        <span>Batas minimal pakan: <strong>20 gram</strong></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-icon">⚡</span>
+                        <span>Mode AUTO akan mengisi pakan otomatis sesuai interval</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-icon">🤖</span>
+                        <span>Prediksi menggunakan ML berdasarkan pola konsumsi ayam</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Smart Feeder System v2.0 - ML Powered</p>
+        </footer>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <span class="toast-icon" id="toast-icon">✅</span>
+        <span class="toast-message" id="toast-message">Message</span>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>
